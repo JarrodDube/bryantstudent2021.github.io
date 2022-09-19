@@ -1,0 +1,218 @@
+
+---
+output: # rmarkdown::github_document
+  html_document:
+  pdf_document: default
+  word_document: default
+title: "Assignment 3.  Working with Data Frame. Base R Style"
+---
+
+Problems and Solutions
+-------
+-------
+
+1. Create the following data frame
+
+| Rank 	| Age 	| Name  	|
+|:------	|:-----	|:-------	|
+| 0    	| 28  	| Tom   	|
+| 1    	| 34  	| Jack  	|
+| 2    	| 29  	| Steve 	|
+| 3    	| 42  	| Ricky 	|
+
+```{r}
+df1 = data.frame(Rank = c(0,1,2,3),
+                Age = c(28,34,29,42),
+                Name = c('Tom', 'Jack', 'Steve','Ricky'))
+
+df1
+```
+
+2. Use `read.csv` to import the Covid19 Vaccination data from WHO: [link](https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv).
+
+```{r}
+df2 = read.csv("https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv")
+
+head(df2)
+```
+
+2. Show the names of the variables in the data
+
+```{r}
+names(df2)
+```
+
+3. How many columns and rows the data have? 
+
+```{r}
+str(df2)
+```
+
+4. How many missing values are there?  Show the missing values by columns.  What variable has the most number of missing values?
+
+```{r}
+sum(is.na(df2))
+
+colSums(is.na(df2))
+```
+
+There are no missing values in this dataset
+
+5. What is the class of the `date` column. Change the `date` columns to `date` type using the `as.Date` function. Show the new class of the `date` column. 
+
+```{r}
+class(df2$date)
+
+df2$date = as.Date(df2$date)
+
+class(df2$date)
+```
+
+6. Capitalize the names of all the variables
+
+```{r}
+names(df2)[1] = "Date"
+names(df2)[2] = "State"
+names(df2)[3] = "Fips"
+names(df2)[4] = "Cases"
+names(df2)[5] = "Deaths"
+
+names(df2)
+```
+
+7. Find the average number of cases per day. Find the maximum cases a day.  
+
+```{r}
+mean(df2$Cases, na.rm=TRUE)
+
+max(df2$Cases, na.rm=TRUE)
+```
+
+8. How many states are there in the data?  
+
+```{r}
+length(unique(df2$State))
+```
+
+9. Create a new variable `weekdays` to store the weekday for each rows. 
+
+```{r}
+df2$weekdays = weekdays(df2$Date)
+
+table(df2$weekdays)
+```
+
+10. Create the categorical variable `death2` variable taking the values as follows
+
+- `has_death` if there is a death that day
+-  `no_death` if there is no death that day
+
+Find the frequency and relative frequency of `no_death` and `has_death`.
+
+```{r}
+df2$death2 = ifelse(df2$Deaths==0,'no_death','has_death')
+
+table(df2$death2)
+```
+
+11. Find the first quartile (Q1), second quartile (Q2) and and third quartile (Q3) of the variable `death`. (Hint:  Use the `summary` function)
+
+```{r}
+summary(df2$Deaths)
+```
+
+12. Create the categorical variable `death3` variable taking the values as follows
+
+- `low_death` if the number of deaths smaller than the 25 percentile (Q1)
+
+- `mid_death` if the number of deaths from Q1 to Q3
+
+- `high_death` if the number of deaths greater than Q3
+
+```{r}
+library(tidyverse)
+df2$death3 = case_when(df2$Deaths < 842 ~ "low_death",
+                             df2$Deaths < 12703 ~ "mid_death",
+                             TRUE ~ "high_death")
+
+table(df2$death3)
+```
+
+13. Find the average cases in Rhode Island in 2021
+
+```{r}
+df3 = df2[(df2$State=="Rhode Island")&(df2$Date>="2021-01-01")&
+            (df2$Date<"2022-01-01"),]
+
+mean(df3$Cases)
+```
+
+14. Find the median cases by weekdays in Rhode Island in 2021 
+
+```{r}
+by(df3$Cases,df3$weekdays,median)
+```
+
+15. Compare the median cases in Rhode Island in June, July, August and September in 2021. 
+
+```{r}
+df4 = df2[(df2$State=="Rhode Island")&(df2$Date>="2021-06-01")&
+            (df2$Date<"2021-10-01"),]
+df4$Month = substr(df4$Date,6,7)
+
+by(df4$Cases,df4$Month,median)
+```
+
+16.  Find your own dataset, import it and implement the following functions on the data
+
+- head
+- str
+- names
+- mean, min, max
+- table
+- is.na
+- colSums
+- class
+- cor
+- by
+- ifelse
+- case_when
+
+```{r}
+adult_census = read.csv("C:/Users/student/OneDrive - Bryant University/College/7th Semester/R/adult_census.csv")
+
+head(adult_census)
+str(adult_census)
+names(adult_census)
+mean(adult_census$age)
+min(adult_census$age)
+max(adult_census$age)
+table(adult_census$age)
+sum(is.na(adult_census))
+colSums(is.na(adult_census))
+class(adult_census)
+cor(adult_census$education.num, adult_census$hours.per.week)
+by(adult_census$hours.per.week, adult_census$education.num, mean)
+head(ifelse(adult_census$education=="Doctorate", "Doctorate", "Less Than Doctorate"))
+adult_census$education.level = case_when(adult_census$education.num <= 12 ~ "High School",
+                             TRUE ~ "Higher Degree")
+table(adult_census$education.level)
+```
+
+17.  In the dataset in #16, practice the follows.  You can reuse the code of 16. 
+
+- Create a categorical variable from a continuous variable
+- From one categorical variable, create a new categorical variable with fewer categories
+
+If you do not have a data, you can use [the titanic dataset](https://www.kaggle.com/competitions/titanic/overview), which can be downloaded at [this link](../data/titanic.csv)
+
+```{r}
+adult_census$education.level = case_when(adult_census$education.num <= 12 ~ "High School",
+                                         TRUE ~ "Higher Degree")
+table(adult_census$education.level)
+
+adult_census$education.level2 = case_when(adult_census$education == "Doctorate" ~ "Doctorate",
+                                          TRUE ~ "Less Than Doctorate")
+table(adult_census$education.level2)
+```
+
