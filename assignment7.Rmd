@@ -114,13 +114,15 @@ df %>% filter(age>=30, age<=50) %>% ggplot() + geom_bar(mapping=aes(x=sex, fill=
 8. Make a plot using combo group_by + summarise + geom_col
 
 ```{r}
-df %>% group_by(sex,age) %>% summarise(mean_education = mean(education.num)) %>% ggplot() +
+gg = df %>% group_by(sex,age) %>% summarise(mean_education = mean(education.num)) %>% ggplot() +
   geom_col(aes(x=age, y=mean_education, fill=sex), position = 'dodge') +
   labs(x='Age', 
        y='Average Education Level',
        fill = 'Sex', 
        title = 'Average Education Level by Age and Sex', 
        caption = 'Females generally have a higher average education level per age until around age 35 when it changes to males usually having the higher level per age.')
+ggsave(filename = 'Question9.png', plot = gg)
+gg
 ```
 
 9. Save a plot and put a link of the plot to your Github Webpage.  To link a plot `abc.png` you just need to insert the following on the README.md
@@ -155,14 +157,24 @@ Do the follows.
 df$date = as.Date(df$date)
 
 df %>% filter(location=='Argentina', date>="2022-01-01") %>% ggplot() + 
-  geom_point(mapping = aes(x = date, y = total_vaccinations, color = vaccine))
+  geom_point(mapping = aes(x = date, y = total_vaccinations, color = vaccine)) +
+  labs(x='Date', 
+       y='Total Vaccinations',
+       color = 'Vaccine', 
+       title = 'Total Vaccines Used by Date in Argentina 2022', 
+       caption = 'Sinopharm and Oxford are the most used vaccines, but Pfizer and Moderna rose greatly over time.')
 ```
 
   - Change `geom_point` to `geom_line` in the above codes to have the corresponding line plots. 
 
 ```{r}
 df %>% filter(location=='Argentina', date>="2022-01-01") %>% ggplot() + 
-  geom_line(mapping = aes(x = date, y = total_vaccinations, color = vaccine))
+  geom_line(mapping = aes(x = date, y = total_vaccinations, color = vaccine)) +
+  labs(x='Date', 
+       y='Total Vaccinations',
+       color = 'Vaccine', 
+       title = 'Total Vaccines Used by Date in Argentina 2022', 
+       caption = 'Sinopharm and Oxford are the most used vaccines, but Pfizer and Moderna rose greatly over time.')
 ```
 
 11. (Using the same dataset as in 10.) Sometime we need to do some calculations on the data before plotting. For example, the below codes is to compare the total vaccines (including all types of vaccines) by date between the US and the EU
@@ -193,7 +205,12 @@ Do the follows.
 ```{r}
 df %>% filter(location %in% c('Cyprus', 'Hong Kong', 'Japan', 'Nepal', 'South Korea')) %>% 
   group_by(date, location) %>% summarise(total_vac2=sum(total_vaccinations, na.rm=TRUE)) %>% 
-  ggplot() + geom_point(mapping=aes(x=date, y=total_vac2, color=location))
+  ggplot() + geom_point(mapping=aes(x=date, y=total_vac2, color=location)) +
+  labs(x='Date', 
+       y='Total Vaccinations',
+       color = 'Location', 
+       title = 'Total Vaccines Used by Date in Asian Regions', 
+       caption = 'Japan quickly rose to have the highest total vaccinations over time by a wide margin.')
 ```
 
 - Use `geom_point` compare the total vaccines (including all types of vaccines) by date between countries/regions in South America in 2021
@@ -202,6 +219,11 @@ df %>% filter(location %in% c('Cyprus', 'Hong Kong', 'Japan', 'Nepal', 'South Ko
 df %>% filter(location %in% c('Argentina', 'Chile', 'Ecuador', 'Peru'), date>="2021-01-01",
               date<"2022-01-01") %>% group_by(date, location) %>% 
   summarise(total_vac2=sum(total_vaccinations, na.rm=TRUE)) %>% 
-  ggplot() + geom_point(mapping=aes(x=date, y=total_vac2, color=location))
+  ggplot() + geom_point(mapping=aes(x=date, y=total_vac2, color=location)) +
+  labs(x='Date', 
+       y='Total Vaccinations',
+       color = 'Location', 
+       title = 'Total Vaccines Used by Date in South American Countries', 
+       caption = 'Argentina quickly rose to have the highest total vaccinations over time by a wide margin.')
 ```
 

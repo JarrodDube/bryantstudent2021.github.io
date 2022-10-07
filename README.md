@@ -16,4 +16,4 @@
 
 [Assignment 7](assignment7.html)
 
-[Assignment 7, Question 8 Plot](Question8.png)
+[Assignment 7, Question 9 Plot](Question9.png)
