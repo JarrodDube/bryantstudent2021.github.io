@@ -1,0 +1,118 @@
+
+---
+output: 
+  html_document:
+  pdf_document: default
+  word_document: default
+title: "Assignment 7 - Extra Credits: Practice dplyr and ggplot2"
+---
+
+***How to do it?***: 
+
+- Open the Rmarkdown file of this assignment ([link](assignment7_extra_credits.Rmd)) in Rstudio. 
+
+- Right under each **question**, insert  a code chunk (you can use the hotkey `Ctrl + Alt + I` to add a code chunk) and code the solution for the question. 
+
+- `Knit` the rmarkdown file (hotkey: `Ctrl + Alt + K`) to export an html.  
+
+-  Publish the html file to your Githiub Page. 
+
+***Submission***: Submit the link on Github of the assignment to Canvas
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+
+-------
+
+1. Import the data at https://bryantstats.github.io/math421/data/ds_salaries.csv
+
+    The data description can be found at https://www.kaggle.com/datasets/saurabhshahane/data-science-jobs-salaries
+
+```{r}
+library(tidyverse)
+df = read_csv("https://bryantstats.github.io/math421/data/ds_salaries.csv")
+library(ggplot2)
+library(dplyr)
+```
+
+2. Is there any column that contains NAs?
+
+```{r}
+colSums(is.na(df))
+```
+No columns contain NA
+
+3. What are the most frequent job titles in the data?  
+
+```{r}
+table(df$job_title)
+```
+The most frequent jobs are Data Scientist, Data Engineer, and Data Analyst, respectively
+
+4. Find the average salary data of the three most frequent job titles in the data. 
+
+```{r}
+df %>% filter(job_title=="Data Scientist"|job_title=="Data Engineer"|job_title=="Data Analyst") %>% group_by(job_title) %>% summarise(average_salary = mean(salary_in_usd))
+```
+
+5. What is the job title that has the highest average salary?
+
+```{r}
+df %>% group_by(job_title) %>% summarise(average_salary = mean(salary_in_usd)) %>% 
+  arrange(-average_salary)
+```
+Data Analytics Lead
+
+6. Which country gives the highest salary on average? 
+
+```{r}
+df %>% group_by(employee_residence) %>% summarise(average_salary = mean(salary_in_usd)) %>% 
+  arrange(-average_salary)
+```
+Malaysia
+
+7. Plot five meaningful plots. All plots should have title, caption, and appropriate labels.
+
+```{r}
+df %>% ggplot() + geom_point(mapping=aes(x=experience_level, y=salary_in_usd)) +
+  labs(x='Experience Level', 
+       y = 'Salary', 
+       title = 'Salary By Experience Level', 
+       caption = 'EX and SE experience levels appear to generally result in higher salaries than EN and MI.')
+
+df %>% ggplot() + geom_bar(mapping=aes(x=remote_ratio, fill=experience_level), position = 'dodge') +
+    labs(x='Remote Ratio', 
+         y='Count',
+         fill = 'Experience Level', 
+         title = 'Count By Experience Level For Different Remote Ratios', 
+         caption = 'All experience levels have their largest proportion working for companies 
+         with a 100% remote ratio, likely because the remoteness has become preferred.')
+
+df %>% group_by(employment_type) %>% summarise(average_salary=mean(salary_in_usd)) %>% 
+  ggplot() + geom_col(mapping=aes(x=employment_type, y=average_salary)) + 
+  labs(x='Employment Type', 
+       y='Average Salary',
+       title = 'Average Salary Per Employment Type', 
+       caption = 'The CT employment type has the highest average salary by far, while FL and PT types result in very low salaries on average.')
+
+df %>% ggplot() + geom_point(mapping=aes(x=work_year, y=salary_in_usd)) + 
+  facet_wrap(~remote_ratio) +
+  labs(x='Year', 
+       y = 'Salary', 
+       title = 'Salary by Year and Remote Ratio', 
+       caption = 'Generally, jobs with 100 remote ratios pay higher salaries, and salaries increased in 2021 and mostly decreased in 2022.')
+
+df %>% ggplot() + geom_bar(mapping=aes(x=employment_type, fill=experience_level), position = 'dodge') +
+    labs(x='Employment Type', 
+         y='Count',
+         fill = 'Experience Level', 
+         title = 'Count By Experience Level For Different Employment Types', 
+         caption = 'The majority of data is for FT employees, 
+         with most of them having SE or MI experience levels, 
+         while the other employment types do not even contain all 4 experience levels.')
+```
+
