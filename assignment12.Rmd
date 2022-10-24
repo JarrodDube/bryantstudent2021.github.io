@@ -34,7 +34,7 @@ data(PimaIndiansDiabetes)
 df <- tibble(PimaIndiansDiabetes)
 
 df = drop_na(df)
-splitIndex <- createDataPartition(df$diabetes, p = .80, 
+splitIndex <- createDataPartition(df$diabetes, p = .85, 
                                   list = FALSE)
 df_train <- df[ splitIndex,]
 df_test <- df[-splitIndex,]
