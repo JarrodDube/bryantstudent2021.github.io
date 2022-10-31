@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Midterm Presentation</title>
+    <meta charset="utf-8" />
+    <meta name="author" content=" Jarrod Dube " />
+    <script src="libs/header-attrs-2.16/header-attrs.js"></script>
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Midterm Presentation
+]
+.author[
+### <font size="5"> Jarrod Dube </font>
+]
+
+---
+
+
+&lt;style&gt;
+
+.remark-slide-content {
+  background-color: #FFFFFF;
+  border-top: 80px solid #F9C389;
+  font-size: 17px;
+  font-weight: 300;
+  line-height: 1.5;
+  padding: 1em 2em 1em 2em
+}
+
+.inverse {
+  background-color: #696767;
+  border-top: 80px solid #696767;
+  text-shadow: none;
+  background-image: url(https://github.com/goodekat/presentations/blob/master/2019-isugg-gganimate-spooky/figures/spider.png?raw=true);
+	background-position: 50% 75%;
+  background-size: 150px;
+}
+
+.your-turn{
+  background-color: #8C7E95;
+  border-top: 80px solid #F9C389;
+  text-shadow: none;
+  background-image: url(https://github.com/goodekat/presentations/blob/master/2019-isugg-gganimate-spooky/figures/spider.png?raw=true);
+	background-position: 95% 90%;
+  background-size: 75px;
+}
+
+.title-slide {
+  background-color: #F9C389;
+  border-top: 80px solid #F9C389;
+  background-image: none;
+}
+
+.title-slide &gt; h1  {
+  color: #111111;
+  font-size: 40px;
+  text-shadow: none;
+  font-weight: 400;
+  text-align: left;
+  margin-left: 15px;
+  padding-top: 80px;
+}
+.title-slide &gt; h2  {
+  margin-top: -25px;
+  padding-bottom: -20px;
+  color: #111111;
+  text-shadow: none;
+  font-weight: 300;
+  font-size: 35px;
+  text-align: left;
+  margin-left: 15px;
+}
+.title-slide &gt; h3  {
+  color: #111111;
+  text-shadow: none;
+  font-weight: 300;
+  font-size: 25px;
+  text-align: left;
+  margin-left: 15px;
+  margin-bottom: -30px;
+}
+
+&lt;/style&gt;
+
+&lt;style type="text/css"&gt;
+.left-code {
+  color: #777;
+  width: 48%;
+  height: 92%;
+  float: left;
+}
+.right-plot {
+  width: 51%;
+  float: right;
+  padding-left: 1%;
+}
+&lt;/style&gt;
+
+
+
+# Part 2 - 1
+
+.left-code[
+
+```r
+df = read_csv("midterm.csv")
+df = df %&gt;% select(-payfix, -raceethn, -admtype, -asource, -preopday, -bwght, -ecodub92, -pt_state, -diag_adm, -er_mode, -obs_hour, -nicu_day)
+df$season = case_when(df$moa &lt; 3 ~ 'Winter',
+                      df$moa &lt; 6 ~ 'Spring',
+                      df$moa &lt; 9 ~ 'Summer',
+                      df$moa &lt; 12 ~ 'Fall',
+                      TRUE ~ 'Winter')
+df$sex = case_when(df$sex == 1 ~ 'Male',
+                   df$sex == 2 ~ 'Female',
+                   TRUE ~ 'Unknown')
+
+df %&gt;% ggplot() + geom_point(mapping=aes(x=age, y=los)) + facet_wrap(~sex) +
+  labs(x='Age', 
+       y = 'Length of Stay', 
+       title = 'Length of Stay by Age and Sex', 
+       caption = 'Younger people of both genders seem to generally have longer 
+       stays than older people. Plots are similar between the two genders.')
+```
+]
+.right-plot[
+&lt;img src="Midterm_Presentation_files/figure-html/unnamed-chunk-2-1.png" style="display: block; margin: auto;" /&gt;
+]
+
+---
+# Part 2 - 2
+
+.left-code[
+
+```r
+df %&gt;% ggplot() + geom_point(mapping=aes(x=los, y=tot)) + facet_wrap(~provider) +
+  labs(x='Length of Stay', 
+       y = 'Total Charge', 
+       title = 'Total Charge by Length of Stay and Provider', 
+       caption = 'Total charge increases as length of stay increases.
+       Providers 7205 and 7214 generally have the most patients and highest total charges')
+```
+]
+.right-plot[
+&lt;img src="Midterm_Presentation_files/figure-html/unnamed-chunk-3-1.png" style="display: block; margin: auto;" /&gt;
+]
+
+---
+# Part 2 - 3
+
+.left-code[
+
+```r
+df %&gt;% ggplot() + geom_bar(mapping=aes(x=sex, fill=season), position = 'dodge') +
+  labs(x='Sex', 
+       y='Count',
+       fill = 'Season', 
+       title = 'Count of Sex By Season', 
+       caption = 'All seasons admit around the same amount of patients, but spring
+       admits the most. More female patients admitted than male.')
+```
+]
+.right-plot[
+&lt;img src="Midterm_Presentation_files/figure-html/unnamed-chunk-4-1.png" style="display: block; margin: auto;" /&gt;
+]
+
+---
+# Part 2 - 4
+
+.left-code[
+
+```r
+df %&gt;% ggplot() + geom_bar(mapping=aes(x=age, fill=season), position = 'fill') +
+  labs(x='Age', 
+       y='Percent',
+       fill = 'Season', 
+       title = 'Percent of Age Per Season', 
+       caption = 'Generally all ages have similar admission levels per season, but
+       summer seems to have lower admission levels for lower ages and higher numbers
+       for older patients.')
+```
+]
+.right-plot[
+&lt;img src="Midterm_Presentation_files/figure-html/unnamed-chunk-5-1.png" style="display: block; margin: auto;" /&gt;
+]
+
+---
+# Part 2 - 5
+
+.left-code[
+
+```r
+df %&gt;% group_by(moa) %&gt;% summarise(average_age=mean(age)) %&gt;% 
+  ggplot() + geom_col(mapping=aes(x=moa, y=average_age)) + 
+  labs(x='Month of Admission', 
+       y='Average Age',
+       title = 'Average Age Per Month of Admission', 
+       caption = 'All months have an average age between 50 and 55.
+       There must not be much variation in average age overall.')
+```
+]
+.right-plot[
+&lt;img src="Midterm_Presentation_files/figure-html/unnamed-chunk-6-1.png" style="display: block; margin: auto;" /&gt;
+]
+
+---
+# Part 2 - 6
+
+.left-code[
+
+```r
+df %&gt;% filter(pay_ub92 &lt; 25) %&gt;%  ggplot() + 
+  geom_bar(mapping=aes(x=pay_ub92, fill=season), position = 'fill') + theme_dark() +
+  labs(x='Payment Type', 
+       y='Percent',
+       fill = 'Season', 
+       title = 'Percent of Payment Type Per Season', 
+       caption = 'More uses of Blue Chip payment occur in Winter than any other month.
+       Most payments types occur more in Fall and Winter than Spring and Summer.')
+```
+]
+.right-plot[
+&lt;img src="Midterm_Presentation_files/figure-html/unnamed-chunk-7-1.png" style="display: block; margin: auto;" /&gt;
+]
+
+---
+# Part 2 - 7
+
+.left-code[
+
+```r
+df %&gt;% filter(age&gt;=65) %&gt;% ggplot() + geom_bar(mapping=aes(x=sex, fill=season)) +
+  labs(x='Sex', 
+       y='Count',
+       fill = 'Season', 
+       title = 'Count of Sex By Season for Senior Citizens', 
+       caption = 'Senior citizens of both genders seem to be hospitalized a little
+       more in Winter and Fall than the other two seasons.')
+```
+]
+.right-plot[
+&lt;img src="Midterm_Presentation_files/figure-html/unnamed-chunk-8-1.png" style="display: block; margin: auto;" /&gt;
+]
+
+---
+# Part 2 - 8
+
+.left-code[
+
+```r
+df %&gt;% group_by(sex,age) %&gt;% 
+  summarise(mean_charge = mean(tot)) %&gt;% ggplot() +
+  geom_col(aes(x=age, y=mean_charge, fill=sex), position = 'dodge') +
+  labs(x='Age', 
+       y='Average Total Charge',
+       fill = 'Sex', 
+       title = 'Average Total Charge by Age and Sex', 
+       caption = 'There is a high peak in average charge around age 15, primarily for males.
+       Average total charge generally increases until age 70 and then decreases after.
+       Males generally have the highest average total charges for most ages.')
+```
+]
+.right-plot[
+&lt;img src="Midterm_Presentation_files/figure-html/unnamed-chunk-9-1.png" style="display: block; margin: auto;" /&gt;
+]
+
+---
+# Part 2 - 9
+
+.left-code[
+
+```r
+df %&gt;% group_by(sex,age) %&gt;% 
+  summarise(mean_stay = mean(los)) %&gt;% ggplot() +
+  geom_col(aes(x=age, y=mean_stay, fill=sex), position = 'dodge') +
+  labs(x='Age', 
+       y='Average Length of Stay',
+       fill = 'Sex', 
+       title = 'Average Length of Stay by Age and Sex', 
+       caption = 'There is a high peak in length of stay around age 15, primarily for males.
+       Males generally have the highest average length of stays for most ages.
+       Most of this plot follows a similar trend to the last one; average length of stay
+       and average total charge must be somewhat related.')
+```
+]
+.right-plot[
+&lt;img src="Midterm_Presentation_files/figure-html/unnamed-chunk-10-1.png" style="display: block; margin: auto;" /&gt;
+]
+
+---
+# Part 2 - 10
+
+.left-code[
+
+```r
+df %&gt;% ggplot() + geom_point(mapping=aes(x=age, y=tot)) + facet_wrap(~sex) +
+  labs(x='Age', 
+       y = 'Total Charge', 
+       title = 'Total Charge by Age and Sex', 
+       caption = 'Most higher charges occur in very young patients and 
+       some middle-age males.')
+```
+]
+.right-plot[
+&lt;img src="Midterm_Presentation_files/figure-html/unnamed-chunk-11-1.png" style="display: block; margin: auto;" /&gt;
+]
+
+---
+# Part 2 - Animation
+
+.left-code[
+
+```r
+df %&gt;% ggplot() + geom_bar(mapping = aes(x = sex, fill = tot)) + 
+  transition_states(age) + 
+  labs(x='Sex', 
+       y='Total Charge',
+       title = 'Age: {closest_state}')
+```
+]
+.right-plot[
+&lt;img src="Midterm_Presentation_files/figure-html/unnamed-chunk-12-1.gif" style="display: block; margin: auto;" /&gt;
+]
+---
+# Part 3 - Questions 4 &amp; 5
+
+![](plot3_4.png)
+
+![](plot3_5.png)
+
+---
+# Part 3 - Question 6
+
+![](plot3_6_1.png)
+
+![](plot3_6_2.png)
+
+---
+# Challenges
+
+- Saving non-ggplots [dev.copy()]
+
+- Trying to compare forests and trees with box and whisker plots [no trees]
+
+- Scaling images for presentation
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"slideNumberFormat": "<div class=\"progress-bar-container\">\n  <div class=\"progress-bar\" style=\"width: calc(%current% / %total% * 100%);\">\n  </div>\n</div>`"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
