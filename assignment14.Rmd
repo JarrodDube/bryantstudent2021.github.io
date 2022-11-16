@@ -1,0 +1,255 @@
+
+---
+output: 
+  html_document:
+  pdf_document: default
+  word_document: default
+title: "Assignment 14: Twitters Mining with rtweet"
+---
+
+***How to do it?***: 
+
+- Open the Rmarkdown file of this assignment ([link](fa2021_assignment14.Rmd)) in Rstudio. 
+
+- Right under each **question**, insert  a code chunk (you can use the hotkey `Ctrl + Alt + I` to add a code chunk) and code the solution for the question. 
+
+- `Knit` the rmarkdown file (hotkey: `Ctrl + Alt + K`) to export an html.  
+
+-  Publish the html file to your Githiub Page. 
+
+***Submission***: Submit the link on Github of the assignment to Canvas
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+
+[Sample Codes](rtweet2.html)
+
+-------
+
+1. Pick a keyword or hashtag. Download the data associated with the keyword/hashtag. Plot at least 5 plots to visualize the data associated with the keyword/hashtag. All plots should have titles and captions. 
+
+```{r, warning=FALSE}
+library(rtweet) 
+library(tidytext)
+library(ggpubr) 
+library(tidyverse) 
+library(knitr)
+library(lubridate)
+```
+
+```{r, eval=FALSE}
+auth_setup_default()
+
+keyword_search = '#wakandaforever'
+
+df <- search_tweets(q = keyword_search, 
+                        n = Inf, # number of tweets
+                        include_rts = FALSE,
+                        `-filter` = "replies",
+                        lang = "en") %>% 
+  mutate(created_at = ymd_hms(format(created_at, tz = "US/Eastern")))
+
+write_csv(df, 'twitter_data.csv')
+```
+
+```{r}
+df <- read_csv('twitter_data.csv')
+
+df$retweet = case_when(df$retweet_count == 0 ~ "No Retweets",
+                       TRUE ~ "Many Retweets")
+
+df %>%
+  unnest_tokens(input = text, output = word) %>% 
+  anti_join(get_stopwords()) %>% 
+  count(retweet, word, sort = TRUE) %>% 
+  group_by(retweet) %>%
+  slice_max(n, n = 10) %>% 
+  ungroup() %>%
+  mutate(word = reorder_within(word, by = n, within = retweet)) %>%
+  ggplot(aes(n, word, fill = retweet)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~retweet, scales = "free") +
+  labs(x = "Frequency",
+       y = NULL)+
+  scale_y_reordered()+
+  labs(title = "Top 10 Most Frequent Words in Retweet Categories", caption = "It is 
+  interesting to see that https and t.co are the most frequent words for 
+  both categories; people must be tweeting numerous links about this topic. Those 
+  with many retweets seem to be more specific about Marvel Studios and the character 
+  of Namor while those with no retweets have more generic words.")
+
+df %>%
+    unnest_tokens(input = text, output = word) %>% 
+    anti_join(get_stopwords()) %>% 
+    count(retweet, word, sort = TRUE) %>%
+    group_by(retweet) %>% 
+    inner_join(get_sentiments("bing")) %>%
+    filter(!is.na(sentiment)) %>%
+    count(sentiment, sort = TRUE) %>% 
+    group_by(retweet) %>% 
+    mutate(n = n/sum(n)) %>% 
+    ggplot(aes(retweet, n, fill=sentiment))+geom_col(position = 'fill')+
+    labs(y='Relative Frequency', x ='# of Retweets', title = "Relative Frequency 
+    for Positive and Negative Sentiments by Retweet Categories", caption = "It is 
+    not totally surprising that those with no retweets have more frequency of negative 
+    words as this movie generally has a positive audience reaction so far and negative 
+    tweets are likely not being agreed with and retweeted.")
+
+ts_plot(df, "hours") +
+  labs(x = NULL, y = NULL,
+       title = "Frequency of Tweets by Time",
+       subtitle = paste0(format(min(df$created_at), "%d %B %Y"), " to ",
+                         format(max(df$created_at),"%d %B %Y")),
+       caption = "Tweeting about this movie was very popular during the two days 
+       after its premiere on Nov-11, but it has mostly stopped after the weekend 
+       ended on Nov-14.") +
+  theme_minimal()
+
+df$favorite = case_when(df$favorite_count <= 2 ~ "Few to No Favorites",
+                       TRUE ~ "Many Favorites")
+
+df %>%
+    unnest_tokens(input = text, output = word) %>% 
+    anti_join(get_stopwords()) %>% 
+    count(favorite, word, sort = TRUE) %>%
+    group_by(favorite) %>% 
+    inner_join(get_sentiments("nrc")) %>%
+    filter(!is.na(sentiment)) %>%
+    count(sentiment, sort = TRUE) %>% 
+    group_by(favorite) %>% 
+    mutate(n = n/sum(n)) %>% 
+    ggplot(aes(sentiment, n, fill=favorite))+geom_col(position = 'fill')+
+    labs(y='Relative Frequency', x ='Sentiments', title = "Relative Frequency of 
+         Sentiments by Number of Favorites", caption = "All sentiments I would 
+         consider positive, such as trust, surprise, and joy, are all more frequent
+         in those tweets with numerous favorites rather than those without many
+         favorites.")
+
+df %>%
+    unnest_tokens(input = text, output = word) %>% 
+    anti_join(get_stopwords()) %>% 
+    count(favorite, word, sort = TRUE) %>%
+    group_by(favorite) %>% 
+    inner_join(get_sentiments("afinn")) %>%
+    mutate(sentiment = value) %>% 
+    filter(!is.na(sentiment)) %>%
+    count(sentiment, sort = TRUE) %>% 
+    group_by(favorite) %>% 
+    mutate(n = n/sum(n)) %>% 
+    ggplot(aes(favorite, n, fill=factor(sentiment)))+geom_col(position = 'dodge')+
+    labs(y='Relative Frequency', fill = 'Sentiment', x = '# of Favorites', 
+    title = "Relative Frequency of Sentiment Levels by Number of Favorites", 
+    caption = "Tweets with many favorites have less negative words than those with
+    few favorites, but a negative sentiment still has the greatest relative frequency
+    for both groups.")
+```
+
+2. Choose a location then pick a trending keyword/hashtag in the location. Download the data associated with the keyword/hashtag. Plot at least 5 plots to visualize the data associated with the keyword/hashtag. All plots should have titles and captions. 
+
+```{r, eval=FALSE}
+trends_available()
+get_trends("Birmingham")
+
+keyword_search = "#AntiBullyingWeek"
+
+df <- search_tweets(q = keyword_search, 
+                        n = Inf, # number of tweets
+                        include_rts = FALSE,
+                        `-filter` = "replies",
+                        lang = "en") %>% 
+  mutate(created_at = ymd_hms(format(created_at, tz = "US/Eastern")))
+
+write_csv(df, 'twitter_data2.csv')
+```
+
+```{r}
+df <- read_csv('twitter_data2.csv')
+
+df$retweet = case_when(df$retweet_count == 0 ~ "No Retweets",
+                       TRUE ~ "Many Retweets")
+
+df %>%
+  unnest_tokens(input = text, output = word) %>% 
+  anti_join(get_stopwords()) %>% 
+  count(retweet, word, sort = TRUE) %>% 
+  group_by(retweet) %>%
+  slice_max(n, n = 10) %>% 
+  ungroup() %>%
+  mutate(word = reorder_within(word, by = n, within = retweet)) %>%
+  ggplot(aes(n, word, fill = retweet)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~retweet, scales = "free") +
+  labs(x = "Frequency",
+       y = NULL)+
+  scale_y_reordered()+
+  labs(title = "Top 10 Most Frequent Words in Retweet Categories", caption = "It is 
+  interesting to see that https and t.co are the most frequent words for 
+  both categories; people must be tweeting numerous links about this topic. There 
+  must also be some celebration of the week called Odd Socks Day. The two groups have
+  almost the exact same list except that those with many retweets have some tweets
+  with multiple links in them.")
+
+df %>%
+    unnest_tokens(input = text, output = word) %>% 
+    anti_join(get_stopwords()) %>% 
+    count(retweet, word, sort = TRUE) %>%
+    group_by(retweet) %>% 
+    inner_join(get_sentiments("bing")) %>%
+    filter(!is.na(sentiment)) %>%
+    count(sentiment, sort = TRUE) %>% 
+    group_by(retweet) %>% 
+    mutate(n = n/sum(n)) %>% 
+    ggplot(aes(retweet, n, fill=sentiment))+geom_col(position = 'fill')+
+    labs(y='Relative Frequency', x ='# of Retweets', title = "Relative Frequency 
+    for Positive and Negative Sentiments by Retweet Categories", caption = "It is 
+    good to see that these tweets about a positive celebration more frequently have
+    positive sentiments. Much of the negative sentiment is likely coming from 
+    bully being flagged as negative.")
+
+ts_plot(df, "hours") +
+  labs(x = NULL, y = NULL,
+       title = "Frequency of Tweets by Time",
+       subtitle = paste0(format(min(df$created_at), "%d %B %Y"), " to ",
+                         format(max(df$created_at),"%d %B %Y")),
+       caption = "Tweeting about this event was very popular during the first day 
+       it started on Nov-14. It was mentioned a few times before, but not really 
+       that much after it began.") +
+  theme_minimal()
+
+df$favorite = case_when(df$favorite_count <= 2 ~ "Few to No Favorites",
+                       TRUE ~ "Many Favorites")
+
+df %>%
+    unnest_tokens(input = text, output = word) %>% 
+    anti_join(get_stopwords()) %>% 
+    count(favorite, word, sort = TRUE) %>%
+    group_by(favorite) %>% 
+    inner_join(get_sentiments("nrc")) %>%
+    filter(!is.na(sentiment)) %>%
+    count(sentiment, sort = TRUE) %>% 
+    group_by(favorite) %>% 
+    mutate(n = n/sum(n)) %>% 
+    ggplot(aes(sentiment, n, fill=favorite))+geom_col(position = 'fill')+
+    labs(y='Relative Frequency', x ='Sentiments', title = "Relative Frequency of 
+         Sentiments by Number of Favorites", caption = "All sentiments I would 
+         consider positive, such as anticipation, surprise, and joy, are all more frequent
+         in those tweets with numerous favorites rather than those without many
+         favorites.")
+
+library(emo)
+df %>%
+  mutate(emoji = ji_extract_all(text)) %>%
+  unnest(cols = c(emoji)) %>%
+  count(emoji, sort = TRUE) %>%
+  head(5) %>% 
+  ggplot(aes(y=reorder(emoji,n), x=n)) +
+  geom_col()+
+  theme(axis.text.y = element_text(size = 40))+
+  labs(x = 'Top Emojis', y = '', title = "Top Emojis in Tweets", caption = "Socks
+       being the most frequent emoji makes sense due to Odd Socks Day. It is good
+       to see that there are three hearts and excited hands as the other emojis,
+       showing the positivity of AntiBullying Week and the good things it is causing.")
+```
+
